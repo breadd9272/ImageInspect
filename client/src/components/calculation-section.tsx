@@ -42,6 +42,14 @@ export default function CalculationSection({ totals, settings }: CalculationSect
     nadeem: totals.nadeem > 0 ? Math.round(baseAmount / totals.nadeem) : 0,
   };
 
+  // Calculate individual prices (per-minute rate × total minutes for each person)
+  const prices = {
+    nafees: rates.nafees * totals.nafees,
+    waqas: rates.waqas * totals.waqas,
+    cheetan: rates.cheetan * totals.cheetan,
+    nadeem: rates.nadeem * totals.nadeem,
+  };
+
   // Final calculation
   const finalRate = totals.totalMinutes > 0 ? (baseAmount / totals.totalMinutes).toFixed(3) : "0.000";
   const totalHours = (totals.totalMinutes / 60).toFixed(1);
@@ -111,6 +119,59 @@ export default function CalculationSection({ totals, settings }: CalculationSect
             disabled={updateSettingsMutation.isPending}
             className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-mono text-center disabled:opacity-50"
           />
+        </div>
+      </div>
+
+      {/* Individual Prices */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
+          <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+          </svg>
+          Individual Prices (Rate × Minutes)
+        </h3>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+            <div className="text-xs font-medium text-slate-600 uppercase tracking-wider mb-1">Nafees Price</div>
+            <div data-testid="text-price-nafees" className="text-2xl font-bold text-green-700 font-mono">
+              {prices.nafees.toLocaleString()}
+            </div>
+            <div className="text-xs text-slate-500 mt-1">{rates.nafees} × {totals.nafees} min</div>
+          </div>
+          
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+            <div className="text-xs font-medium text-slate-600 uppercase tracking-wider mb-1">Waqas Price</div>
+            <div data-testid="text-price-waqas" className="text-2xl font-bold text-green-700 font-mono">
+              {prices.waqas.toLocaleString()}
+            </div>
+            <div className="text-xs text-slate-500 mt-1">{rates.waqas} × {totals.waqas} min</div>
+          </div>
+          
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+            <div className="text-xs font-medium text-slate-600 uppercase tracking-wider mb-1">Cheetan Price</div>
+            <div data-testid="text-price-cheetan" className="text-2xl font-bold text-green-700 font-mono">
+              {prices.cheetan.toLocaleString()}
+            </div>
+            <div className="text-xs text-slate-500 mt-1">{rates.cheetan} × {totals.cheetan} min</div>
+          </div>
+          
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+            <div className="text-xs font-medium text-slate-600 uppercase tracking-wider mb-1">Nadeem Price</div>
+            <div data-testid="text-price-nadeem" className="text-2xl font-bold text-green-700 font-mono">
+              {prices.nadeem.toLocaleString()}
+            </div>
+            <div className="text-xs text-slate-500 mt-1">{rates.nadeem} × {totals.nadeem} min</div>
+          </div>
+        </div>
+
+        <div className="mt-6 p-4 bg-gradient-to-r from-green-100 to-emerald-100 rounded-lg border border-green-300">
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-medium text-green-800">Total of All Prices:</span>
+            <span data-testid="text-total-prices" className="text-xl font-bold text-green-800 font-mono">
+              {(prices.nafees + prices.waqas + prices.cheetan + prices.nadeem).toLocaleString()}
+            </span>
+          </div>
         </div>
       </div>
 
