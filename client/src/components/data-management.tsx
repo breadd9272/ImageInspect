@@ -102,29 +102,35 @@ export default function DataManagement() {
       }
 
       // Add a small delay to ensure the UI is settled
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 300));
 
-      // Capture the complete table container as canvas
+      // Get the actual dimensions of the container
+      const rect = tableContainer.getBoundingClientRect();
+      console.log('Container dimensions:', rect);
+
+      // Capture the complete table container as canvas with better settings
       const canvas = await html2canvas(tableContainer, {
         backgroundColor: '#ffffff',
-        scale: 2, // Higher quality
+        scale: 1, // Reduce scale to capture full content
         useCORS: true,
-        logging: true, // Enable logging to debug
+        logging: false,
         allowTaint: true,
-        width: tableContainer.scrollWidth,
-        height: tableContainer.scrollHeight,
-        scrollX: 0,
-        scrollY: 0,
-        ignoreElements: (element) => {
-          // Ignore certain elements that might cause issues
-          return element.tagName === 'SCRIPT' || element.tagName === 'STYLE';
-        }
+        foreignObjectRendering: true,
+        removeContainer: false,
+        width: Math.max(rect.width, tableContainer.scrollWidth),
+        height: Math.max(rect.height, tableContainer.scrollHeight),
+        windowWidth: window.innerWidth,
+        windowHeight: window.innerHeight,
+        x: 0,
+        y: 0
       });
+
+      console.log('Canvas dimensions:', canvas.width, 'x', canvas.height);
 
       // Convert to PNG and download
       const link = document.createElement('a');
       link.download = `time-tracker-${new Date().toISOString().split('T')[0]}.png`;
-      link.href = canvas.toDataURL('image/png', 0.9);
+      link.href = canvas.toDataURL('image/png', 1.0);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
