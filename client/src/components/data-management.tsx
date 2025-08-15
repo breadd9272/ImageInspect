@@ -90,38 +90,47 @@ export default function DataManagement() {
 
   const handleDownloadPNG = async () => {
     try {
-      // Find the time tracker table
-      const tableElement = document.querySelector('.data-table')?.parentElement;
-      if (!tableElement) {
+      // Find the complete time tracker container by ID
+      const tableContainer = document.getElementById('time-tracker-container');
+      if (!tableContainer) {
         toast({ 
           title: "Error", 
-          description: "Table not found for capture", 
+          description: "Time tracker table not found for capture", 
           variant: "destructive" 
         });
         return;
       }
 
-      // Capture the table as canvas
-      const canvas = await html2canvas(tableElement, {
+      // Add a small delay to ensure the UI is settled
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Capture the complete table container as canvas
+      const canvas = await html2canvas(tableContainer, {
         backgroundColor: '#ffffff',
         scale: 2, // Higher quality
         useCORS: true,
-        logging: false
+        logging: false,
+        allowTaint: true,
+        width: tableContainer.scrollWidth,
+        height: tableContainer.scrollHeight,
+        scrollX: 0,
+        scrollY: 0
       });
 
       // Convert to PNG and download
       const link = document.createElement('a');
       link.download = `time-tracker-${new Date().toISOString().split('T')[0]}.png`;
-      link.href = canvas.toDataURL('image/png');
+      link.href = canvas.toDataURL('image/png', 0.9);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
 
       toast({ title: "PNG downloaded successfully" });
     } catch (error) {
+      console.error('PNG download error:', error);
       toast({ 
         title: "Failed to download PNG", 
-        description: "Please try again",
+        description: "Please try again. Error: " + (error instanceof Error ? error.message : 'Unknown error'),
         variant: "destructive" 
       });
     }

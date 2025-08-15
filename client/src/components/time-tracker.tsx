@@ -99,7 +99,7 @@ export default function TimeTracker({ timeEntries, totals }: TimeTrackerProps) {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+    <div id="time-tracker-container" className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
       {/* Table Controls */}
       <div className="px-6 py-4 border-b border-slate-200 bg-slate-50">
         <div className="flex justify-between items-center">
