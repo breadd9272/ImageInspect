@@ -30,6 +30,13 @@ User language: Urdu/English mix (user communicates in Urdu).
 - **ORM**: Drizzle ORM provides type-safe database queries and automatic TypeScript types
 - **Migrations**: Drizzle Kit manages database schema changes and migrations
 
+## Mobile App Support
+- **Capacitor**: Hybrid app framework for native mobile deployment
+- **PWA**: Progressive Web App with offline capabilities and installable from browser
+- **Mobile UI**: Touch-optimized responsive design with safe area support
+- **Export Features**: PNG and PDF export functionality maintained in mobile version
+- **Build Process**: Automated APK generation via Android Studio integration
+
 ## Authentication & Authorization
 - **Current State**: No authentication implemented - application is open access
 - **Session Management**: Express session middleware configured for future authentication needs
