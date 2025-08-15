@@ -99,6 +99,16 @@ export default function DataManagement() {
       { nafees: 0, waqas: 0, cheetan: 0, nadeem: 0, totalMinutes: 0 }
     );
 
+    // Calculate prices using final per-minute rate
+    const baseAmount = 10000; // Default base amount
+    const finalPerMinuteRate = totals.totalMinutes > 0 ? baseAmount / totals.totalMinutes : 0;
+    const prices = {
+      nafees: Math.round(finalPerMinuteRate * totals.nafees),
+      waqas: Math.round(finalPerMinuteRate * totals.waqas),
+      cheetan: Math.round(finalPerMinuteRate * totals.cheetan),
+      nadeem: Math.round(finalPerMinuteRate * totals.nadeem),
+    };
+
     return `
       <!DOCTYPE html>
       <html>
@@ -110,11 +120,10 @@ export default function DataManagement() {
             th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
             th { background-color: #f5f5f5; }
             .totals { background-color: #e8f5e8; font-weight: bold; }
-            h1 { color: #333; }
+            .prices { background-color: #f0f8ff; font-weight: bold; color: #2563eb; }
           </style>
         </head>
         <body>
-          <h1>Time Tracking Report</h1>
           <p>Generated on: ${new Date().toLocaleString()}</p>
           
           <table>
@@ -149,13 +158,31 @@ export default function DataManagement() {
                 <td>${totals.nadeem}</td>
                 <td>${totals.totalMinutes}</td>
               </tr>
+              <tr class="prices">
+                <td>PRICE</td>
+                <td>${prices.nafees.toLocaleString()}</td>
+                <td>${prices.waqas.toLocaleString()}</td>
+                <td>${prices.cheetan.toLocaleString()}</td>
+                <td>${prices.nadeem.toLocaleString()}</td>
+                <td>${(prices.nafees + prices.waqas + prices.cheetan + prices.nadeem).toLocaleString()}</td>
+              </tr>
             </tfoot>
           </table>
           
           <div>
             <h3>Summary</h3>
-            <p>Total Minutes: ${totals.totalMinutes}</p>
-            <p>Total Hours: ${(totals.totalMinutes / 60).toFixed(1)}</p>
+            <p><strong>Base Amount:</strong> ${baseAmount.toLocaleString()}</p>
+            <p><strong>Total Minutes:</strong> ${totals.totalMinutes}</p>
+            <p><strong>Total Hours:</strong> ${(totals.totalMinutes / 60).toFixed(1)}</p>
+            <p><strong>Per Minute Rate:</strong> ${baseAmount.toLocaleString()} ÷ ${totals.totalMinutes} = ${finalPerMinuteRate.toFixed(3)}</p>
+            <br>
+            <h4>Individual Calculations:</h4>
+            <p>• Nafees: ${finalPerMinuteRate.toFixed(3)} × ${totals.nafees} min = ${prices.nafees.toLocaleString()}</p>
+            <p>• Waqas: ${finalPerMinuteRate.toFixed(3)} × ${totals.waqas} min = ${prices.waqas.toLocaleString()}</p>
+            <p>• Cheetan: ${finalPerMinuteRate.toFixed(3)} × ${totals.cheetan} min = ${prices.cheetan.toLocaleString()}</p>
+            <p>• Nadeem: ${finalPerMinuteRate.toFixed(3)} × ${totals.nadeem} min = ${prices.nadeem.toLocaleString()}</p>
+            <br>
+            <p><strong>Total Price:</strong> ${(prices.nafees + prices.waqas + prices.cheetan + prices.nadeem).toLocaleString()}</p>
           </div>
         </body>
       </html>
