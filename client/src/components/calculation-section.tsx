@@ -42,12 +42,13 @@ export default function CalculationSection({ totals, settings }: CalculationSect
     nadeem: totals.nadeem > 0 ? Math.round(baseAmount / totals.nadeem) : 0,
   };
 
-  // Calculate individual prices (per-minute rate × total minutes for each person)
+  // Calculate individual prices using final per-minute rate × each person's minutes
+  const finalPerMinuteRate = totals.totalMinutes > 0 ? baseAmount / totals.totalMinutes : 0;
   const prices = {
-    nafees: rates.nafees * totals.totalMinutes,
-    waqas: rates.waqas * totals.totalMinutes,
-    cheetan: rates.cheetan * totals.totalMinutes,
-    nadeem: rates.nadeem * totals.totalMinutes,
+    nafees: Math.round(finalPerMinuteRate * totals.nafees),
+    waqas: Math.round(finalPerMinuteRate * totals.waqas),
+    cheetan: Math.round(finalPerMinuteRate * totals.cheetan),
+    nadeem: Math.round(finalPerMinuteRate * totals.nadeem),
   };
 
   // Final calculation
@@ -128,7 +129,7 @@ export default function CalculationSection({ totals, settings }: CalculationSect
           <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
           </svg>
-          Individual Prices (Rate × Minutes)
+          Individual Prices (Final Rate × Each Person's Minutes)
         </h3>
         
         <div className="grid grid-cols-2 gap-4">
@@ -137,7 +138,7 @@ export default function CalculationSection({ totals, settings }: CalculationSect
             <div data-testid="text-price-nafees" className="text-2xl font-bold text-green-700 font-mono">
               {prices.nafees.toLocaleString()}
             </div>
-            <div className="text-xs text-slate-500 mt-1">{rates.nafees} × {totals.totalMinutes} min</div>
+            <div className="text-xs text-slate-500 mt-1">{finalPerMinuteRate.toFixed(3)} × {totals.nafees} min</div>
           </div>
           
           <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
@@ -145,7 +146,7 @@ export default function CalculationSection({ totals, settings }: CalculationSect
             <div data-testid="text-price-waqas" className="text-2xl font-bold text-green-700 font-mono">
               {prices.waqas.toLocaleString()}
             </div>
-            <div className="text-xs text-slate-500 mt-1">{rates.waqas} × {totals.totalMinutes} min</div>
+            <div className="text-xs text-slate-500 mt-1">{finalPerMinuteRate.toFixed(3)} × {totals.waqas} min</div>
           </div>
           
           <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
@@ -153,7 +154,7 @@ export default function CalculationSection({ totals, settings }: CalculationSect
             <div data-testid="text-price-cheetan" className="text-2xl font-bold text-green-700 font-mono">
               {prices.cheetan.toLocaleString()}
             </div>
-            <div className="text-xs text-slate-500 mt-1">{rates.cheetan} × {totals.totalMinutes} min</div>
+            <div className="text-xs text-slate-500 mt-1">{finalPerMinuteRate.toFixed(3)} × {totals.cheetan} min</div>
           </div>
           
           <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
@@ -161,7 +162,7 @@ export default function CalculationSection({ totals, settings }: CalculationSect
             <div data-testid="text-price-nadeem" className="text-2xl font-bold text-green-700 font-mono">
               {prices.nadeem.toLocaleString()}
             </div>
-            <div className="text-xs text-slate-500 mt-1">{rates.nadeem} × {totals.totalMinutes} min</div>
+            <div className="text-xs text-slate-500 mt-1">{finalPerMinuteRate.toFixed(3)} × {totals.nadeem} min</div>
           </div>
         </div>
 
