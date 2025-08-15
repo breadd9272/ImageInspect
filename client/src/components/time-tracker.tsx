@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useMemo } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -20,6 +20,16 @@ export default function TimeTracker({ timeEntries, totals }: TimeTrackerProps) {
   const { toast } = useToast();
   const [editingId, setEditingId] = useState<string | null>(null);
   const debounceTimeouts = useRef<{ [key: string]: NodeJS.Timeout }>({});
+
+  // Sort time entries by date (newest first)
+  const sortedTimeEntries = useMemo(() => {
+    return [...timeEntries].sort((a, b) => {
+      if (!a.date && !b.date) return 0;
+      if (!a.date) return 1;
+      if (!b.date) return -1;
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    });
+  }, [timeEntries]);
 
   const createMutation = useMutation({
     mutationFn: async (data: InsertTimeEntry) => {
@@ -133,7 +143,7 @@ export default function TimeTracker({ timeEntries, totals }: TimeTrackerProps) {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200">
-            {timeEntries.map((entry) => (
+            {sortedTimeEntries.map((entry) => (
               <tr key={entry.id} className="hover:bg-slate-50 transition-colors">
                 <td className="px-6 py-4">
                   <input
