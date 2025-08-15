@@ -1,0 +1,11 @@
+server/
+node_modules/
+.git/
+android/
+attached_assets/
+src/
+*.md
+*.sh
+capacitor.config.ts
+drizzle.config.ts
+mobile-setup.md
