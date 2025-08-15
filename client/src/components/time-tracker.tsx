@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -19,6 +19,7 @@ export default function TimeTracker({ timeEntries, totals }: TimeTrackerProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [editingId, setEditingId] = useState<string | null>(null);
+  const debounceTimeouts = useRef<{ [key: string]: NodeJS.Timeout }>({});
 
   const createMutation = useMutation({
     mutationFn: async (data: InsertTimeEntry) => {
@@ -73,12 +74,23 @@ export default function TimeTracker({ timeEntries, totals }: TimeTrackerProps) {
     });
   };
 
-  const handleUpdateEntry = (id: string, field: keyof InsertTimeEntry, value: string | number) => {
-    updateMutation.mutate({
-      id,
-      data: { [field]: value },
-    });
-  };
+  const handleUpdateEntry = useCallback((id: string, field: keyof InsertTimeEntry, value: string | number) => {
+    const key = `${id}-${field}`;
+    
+    // Clear existing timeout
+    if (debounceTimeouts.current[key]) {
+      clearTimeout(debounceTimeouts.current[key]);
+    }
+    
+    // Set new timeout for debounced update
+    debounceTimeouts.current[key] = setTimeout(() => {
+      updateMutation.mutate({
+        id,
+        data: { [field]: value },
+      });
+      delete debounceTimeouts.current[key];
+    }, 500); // 500ms debounce
+  }, [updateMutation]);
 
   const handleDeleteEntry = (id: string) => {
     if (confirm("Are you sure you want to delete this entry?")) {
