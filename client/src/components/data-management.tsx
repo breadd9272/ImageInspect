@@ -124,35 +124,43 @@ export default function DataManagement() {
             <title>Time Tracking Table</title>
             <style>
               body { 
-                font-family: Arial, sans-serif; 
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; 
                 margin: 10px; 
                 background: white;
                 color: black;
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
               }
               table { 
                 width: 100%; 
                 border-collapse: collapse; 
                 margin: 0;
                 box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                border: 2px solid #333;
               }
               th, td { 
                 border: 1px solid #333; 
-                padding: 12px 8px; 
+                padding: 14px 10px; 
                 text-align: center; 
-                font-size: 14px;
+                font-size: 15px;
+                line-height: 1.3;
+                font-weight: 500;
               }
               th { 
-                background-color: #f5f5f5; 
-                font-weight: bold;
-                color: #333;
+                background-color: #f8f9fa; 
+                font-weight: 700;
+                color: #212529;
+                border-bottom: 2px solid #333;
               }
               .total-row { 
-                background-color: #e8f5e8; 
-                font-weight: bold;
+                background-color: #d4edda; 
+                font-weight: 700;
+                border-top: 2px solid #333;
               }
               .price-row { 
-                background-color: #e3f2fd; 
-                font-weight: bold;
+                background-color: #d1ecf1; 
+                font-weight: 700;
+                border-top: 1px solid #333;
               }
               .date-col { width: 120px; }
               .name-col { width: 100px; }
@@ -233,15 +241,18 @@ export default function DataManagement() {
       const tableElement = iframe.contentDocument!.querySelector('table');
       const tableHeight = tableElement ? tableElement.offsetHeight + 40 : 400;
 
-      // Capture the iframe content with proper dimensions
+      // Capture the iframe content with high quality settings
       const canvas = await html2canvas(iframe.contentDocument!.body, {
         backgroundColor: '#ffffff',
-        scale: 1,
+        scale: 2, // Higher scale for better quality
         useCORS: true,
         logging: false,
         allowTaint: true,
         width: 800,
-        height: Math.min(tableHeight, 400)
+        height: Math.min(tableHeight, 400),
+        pixelRatio: 2, // Better pixel density
+        foreignObjectRendering: true,
+        removeContainer: false
       });
 
       // Clean up
@@ -249,10 +260,10 @@ export default function DataManagement() {
 
       console.log('PNG Report dimensions:', canvas.width, 'x', canvas.height);
 
-      // Download
+      // Download with high quality
       const link = document.createElement('a');
-      link.download = `time-tracker-report-${new Date().toISOString().split('T')[0]}.png`;
-      link.href = canvas.toDataURL('image/png', 1.0);
+      link.download = `time-tracker-table-${new Date().toISOString().split('T')[0]}.png`;
+      link.href = canvas.toDataURL('image/png', 1.0); // Maximum quality
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
