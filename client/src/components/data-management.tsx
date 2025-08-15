@@ -90,9 +90,11 @@ export default function DataManagement() {
 
   const handleDownloadPNG = async () => {
     try {
-      // Find the complete time tracker container by ID
+      // Find the table element directly
+      const tableElement = document.querySelector('#time-tracker-container .data-table');
       const tableContainer = document.getElementById('time-tracker-container');
-      if (!tableContainer) {
+      
+      if (!tableElement || !tableContainer) {
         toast({ 
           title: "Error", 
           description: "Time tracker table not found for capture", 
@@ -101,54 +103,64 @@ export default function DataManagement() {
         return;
       }
 
-      // Scroll to the table to make sure it's in view
-      tableContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      
-      // Add delay for scrolling to complete
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Scroll to make sure table is visible
+      tableContainer.scrollIntoView({ behavior: 'auto', block: 'start' });
+      await new Promise(resolve => setTimeout(resolve, 200));
 
-      // Remove any transforms or constraints that might limit the capture
-      const originalTransform = tableContainer.style.transform;
-      const originalPosition = tableContainer.style.position;
-      tableContainer.style.transform = 'none';
-      tableContainer.style.position = 'static';
+      // Create a temporary wrapper for the complete table with header
+      const tempWrapper = document.createElement('div');
+      tempWrapper.style.cssText = `
+        position: fixed;
+        top: -9999px;
+        left: -9999px;
+        background: white;
+        padding: 20px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        font-family: system-ui, -apple-system, sans-serif;
+        z-index: -1;
+        min-width: 800px;
+      `;
 
-      // Get the full container dimensions including all content
-      const fullWidth = Math.max(
-        tableContainer.scrollWidth,
-        tableContainer.offsetWidth,
-        tableContainer.clientWidth
-      );
-      const fullHeight = Math.max(
-        tableContainer.scrollHeight,
-        tableContainer.offsetHeight,
-        tableContainer.clientHeight
-      );
+      // Clone the entire table container content
+      const clonedContainer = tableContainer.cloneNode(true) as HTMLElement;
+      clonedContainer.style.position = 'static';
+      clonedContainer.style.transform = 'none';
+      clonedContainer.style.width = 'auto';
+      clonedContainer.style.height = 'auto';
+      clonedContainer.style.maxWidth = 'none';
+      clonedContainer.style.maxHeight = 'none';
+      clonedContainer.style.overflow = 'visible';
 
-      console.log('Full dimensions:', fullWidth, 'x', fullHeight);
+      tempWrapper.appendChild(clonedContainer);
+      document.body.appendChild(tempWrapper);
 
-      // Capture with explicit dimensions
-      const canvas = await html2canvas(tableContainer, {
+      // Wait for render
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Get dimensions of the temporary wrapper
+      const wrapperRect = tempWrapper.getBoundingClientRect();
+      console.log('Wrapper dimensions:', wrapperRect.width, 'x', wrapperRect.height);
+
+      // Capture the temporary wrapper
+      const canvas = await html2canvas(tempWrapper, {
         backgroundColor: '#ffffff',
         scale: 1,
         useCORS: true,
         logging: false,
         allowTaint: true,
-        width: fullWidth,
-        height: fullHeight,
+        width: Math.max(800, wrapperRect.width),
+        height: wrapperRect.height,
         scrollX: 0,
-        scrollY: 0,
-        windowWidth: Math.max(fullWidth, window.innerWidth),
-        windowHeight: Math.max(fullHeight, window.innerHeight)
+        scrollY: 0
       });
 
-      // Restore original styles
-      tableContainer.style.transform = originalTransform;
-      tableContainer.style.position = originalPosition;
+      // Clean up
+      document.body.removeChild(tempWrapper);
 
-      console.log('Final canvas dimensions:', canvas.width, 'x', canvas.height);
+      console.log('Final PNG canvas dimensions:', canvas.width, 'x', canvas.height);
 
-      // Convert to PNG and download
+      // Download
       const link = document.createElement('a');
       link.download = `time-tracker-table-${new Date().toISOString().split('T')[0]}.png`;
       link.href = canvas.toDataURL('image/png', 1.0);
@@ -156,7 +168,7 @@ export default function DataManagement() {
       link.click();
       document.body.removeChild(link);
 
-      toast({ title: "Table PNG downloaded successfully" });
+      toast({ title: "Complete table downloaded as PNG" });
     } catch (error) {
       console.error('PNG download error:', error);
       toast({ 
