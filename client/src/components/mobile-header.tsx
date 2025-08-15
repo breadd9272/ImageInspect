@@ -1,5 +1,4 @@
 import { useDeviceInfo } from "@/hooks/use-mobile";
-import { RealApkDownloader } from "./real-apk-downloader";
 
 interface MobileHeaderProps {
   title: string;
@@ -24,11 +23,6 @@ export function MobileHeader({ title, subtitle }: MobileHeaderProps) {
         <div className="flex-1">
           <h1 className="text-lg font-semibold">{title}</h1>
           {subtitle && <p className="text-emerald-100 text-sm">{subtitle}</p>}
-        </div>
-        <div className="ml-4">
-          <div className="[&>button]:bg-emerald-500 [&>button]:hover:bg-emerald-400 [&>button]:text-white [&>button]:border-emerald-400 [&>button]:text-sm [&>button]:px-3 [&>button]:py-2">
-            <RealApkDownloader />
-          </div>
         </div>
       </div>
     </div>
