@@ -1,6 +1,6 @@
-import TimeTracker from "@/components/time-tracker";
-import CalculationSection from "@/components/calculation-section";
-import DataManagement from "@/components/data-management";
+import TimeTracker from "../components/time-tracker";
+import CalculationSection from "../components/calculation-section";
+import DataManagement from "../components/data-management";
 import { useQuery } from "@tanstack/react-query";
 import type { TimeEntry, Settings } from "@shared/schema";
 

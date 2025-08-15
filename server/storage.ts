@@ -38,9 +38,17 @@ export class MemStorage implements IStorage {
 
   async createTimeEntry(insertEntry: InsertTimeEntry): Promise<TimeEntry> {
     const id = randomUUID();
-    const totalMinutes = insertEntry.nafees + insertEntry.waqas + insertEntry.cheetan + insertEntry.nadeem;
+    const nafees = insertEntry.nafees ?? 0;
+    const waqas = insertEntry.waqas ?? 0;
+    const cheetan = insertEntry.cheetan ?? 0;
+    const nadeem = insertEntry.nadeem ?? 0;
+    const totalMinutes = nafees + waqas + cheetan + nadeem;
     const entry: TimeEntry = { 
-      ...insertEntry, 
+      ...insertEntry,
+      nafees,
+      waqas,
+      cheetan,
+      nadeem,
       id, 
       totalMinutes 
     };
@@ -53,7 +61,11 @@ export class MemStorage implements IStorage {
     if (!existing) return undefined;
     
     const updated = { ...existing, ...updateEntry };
-    updated.totalMinutes = updated.nafees + updated.waqas + updated.cheetan + updated.nadeem;
+    const nafees = updated.nafees ?? 0;
+    const waqas = updated.waqas ?? 0;
+    const cheetan = updated.cheetan ?? 0;
+    const nadeem = updated.nadeem ?? 0;
+    updated.totalMinutes = nafees + waqas + cheetan + nadeem;
     
     this.timeEntries.set(id, updated);
     return updated;
