@@ -2,6 +2,7 @@ import { useState, useCallback, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useDeviceInfo } from "@/hooks/use-mobile";
 import type { TimeEntry, InsertTimeEntry } from "@shared/schema";
 
 interface TimeTrackerProps {
@@ -18,6 +19,7 @@ interface TimeTrackerProps {
 export default function TimeTracker({ timeEntries, totals }: TimeTrackerProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { isMobile } = useDeviceInfo();
   const [editingId, setEditingId] = useState<string | null>(null);
   const debounceTimeouts = useRef<{ [key: string]: NodeJS.Timeout }>({});
 
@@ -98,7 +100,160 @@ export default function TimeTracker({ timeEntries, totals }: TimeTrackerProps) {
     }
   };
 
-  return (
+  // Mobile card layout
+  const MobileView = () => (
+    <div id="time-tracker-container" className="bg-white rounded-xl shadow-sm border border-slate-200">
+      {/* Mobile Header */}
+      <div className="px-4 py-3 border-b border-slate-200 bg-slate-50">
+        <div className="flex justify-between items-center">
+          <h2 className="text-base font-semibold text-slate-800">Time Entries</h2>
+          <button
+            data-testid="button-add-row"
+            onClick={handleAddRow}
+            disabled={createMutation.isPending}
+            className="inline-flex items-center px-3 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50"
+          >
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            Add
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Cards */}
+      <div className="divide-y divide-slate-200">
+        {timeEntries.map((entry) => (
+          <div key={entry.id} className="p-4 space-y-3">
+            {/* Date and Delete Button Row */}
+            <div className="flex justify-between items-center">
+              <div className="flex-1">
+                <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Date</label>
+                <input
+                  data-testid={`input-date-${entry.id}`}
+                  type="date"
+                  value={entry.date}
+                  onChange={(e) => handleUpdateEntry(entry.id, 'date', e.target.value)}
+                  className="block w-full mt-1 text-sm border border-slate-300 rounded-md px-3 py-2 bg-white focus:border-emerald-500 focus:ring-emerald-500"
+                />
+              </div>
+              <button
+                data-testid={`button-delete-${entry.id}`}
+                onClick={() => handleDeleteEntry(entry.id)}
+                disabled={deleteMutation.isPending}
+                className="ml-3 p-2 text-red-500 hover:text-red-700 transition-colors disabled:opacity-50"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+              </button>
+            </div>
+
+            {/* Person Inputs Grid */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Nafees</label>
+                <input
+                  data-testid={`input-nafees-${entry.id}`}
+                  type="number"
+                  min="0"
+                  value={entry.nafees}
+                  onChange={(e) => handleUpdateEntry(entry.id, 'nafees', parseInt(e.target.value) || 0)}
+                  className="block w-full mt-1 text-sm border border-slate-300 rounded-md px-3 py-2 bg-white focus:border-emerald-500 focus:ring-emerald-500 text-center font-mono"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Waqas</label>
+                <input
+                  data-testid={`input-waqas-${entry.id}`}
+                  type="number"
+                  min="0"
+                  value={entry.waqas}
+                  onChange={(e) => handleUpdateEntry(entry.id, 'waqas', parseInt(e.target.value) || 0)}
+                  className="block w-full mt-1 text-sm border border-slate-300 rounded-md px-3 py-2 bg-white focus:border-emerald-500 focus:ring-emerald-500 text-center font-mono"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Cheetan</label>
+                <input
+                  data-testid={`input-cheetan-${entry.id}`}
+                  type="number"
+                  min="0"
+                  value={entry.cheetan}
+                  onChange={(e) => handleUpdateEntry(entry.id, 'cheetan', parseInt(e.target.value) || 0)}
+                  className="block w-full mt-1 text-sm border border-slate-300 rounded-md px-3 py-2 bg-white focus:border-emerald-500 focus:ring-emerald-500 text-center font-mono"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Nadeem</label>
+                <input
+                  data-testid={`input-nadeem-${entry.id}`}
+                  type="number"
+                  min="0"
+                  value={entry.nadeem}
+                  onChange={(e) => handleUpdateEntry(entry.id, 'nadeem', parseInt(e.target.value) || 0)}
+                  className="block w-full mt-1 text-sm border border-slate-300 rounded-md px-3 py-2 bg-white focus:border-emerald-500 focus:ring-emerald-500 text-center font-mono"
+                />
+              </div>
+            </div>
+
+            {/* Total Minutes */}
+            <div className="text-center">
+              <label className="text-xs font-medium text-slate-600 uppercase tracking-wide">Total Minutes</label>
+              <div className="mt-1">
+                <span 
+                  data-testid={`text-total-${entry.id}`}
+                  className="inline-block text-lg font-bold text-emerald-800 font-mono bg-emerald-100 px-4 py-2 rounded-lg"
+                >
+                  {entry.totalMinutes}
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Mobile Totals */}
+      <div className="bg-emerald-50 border-t-2 border-emerald-200 p-4">
+        <h3 className="text-sm font-bold text-emerald-800 uppercase mb-3 text-center">Totals</h3>
+        <div className="grid grid-cols-2 gap-3 mb-3">
+          <div className="text-center">
+            <div className="text-xs text-emerald-700 font-medium">Nafees</div>
+            <span data-testid="text-total-nafees" className="text-sm font-bold text-emerald-800 font-mono">
+              {totals.nafees}
+            </span>
+          </div>
+          <div className="text-center">
+            <div className="text-xs text-emerald-700 font-medium">Waqas</div>
+            <span data-testid="text-total-waqas" className="text-sm font-bold text-emerald-800 font-mono">
+              {totals.waqas}
+            </span>
+          </div>
+          <div className="text-center">
+            <div className="text-xs text-emerald-700 font-medium">Cheetan</div>
+            <span data-testid="text-total-cheetan" className="text-sm font-bold text-emerald-800 font-mono">
+              {totals.cheetan}
+            </span>
+          </div>
+          <div className="text-center">
+            <div className="text-xs text-emerald-700 font-medium">Nadeem</div>
+            <span data-testid="text-total-nadeem" className="text-sm font-bold text-emerald-800 font-mono">
+              {totals.nadeem}
+            </span>
+          </div>
+        </div>
+        <div className="text-center">
+          <div className="text-xs text-emerald-700 font-medium mb-1">Total Minutes</div>
+          <span data-testid="text-total-minutes" className="inline-block text-lg font-bold text-emerald-800 font-mono bg-emerald-100 px-4 py-2 rounded-lg">
+            {totals.totalMinutes}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Desktop table layout
+  const DesktopView = () => (
     <div id="time-tracker-container" className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
       {/* Table Controls */}
       <div className="px-6 py-4 border-b border-slate-200 bg-slate-50">
@@ -246,4 +401,6 @@ export default function TimeTracker({ timeEntries, totals }: TimeTrackerProps) {
       </div>
     </div>
   );
+
+  return isMobile ? <MobileView /> : <DesktopView />;
 }
