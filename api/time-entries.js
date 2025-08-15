@@ -1,6 +1,17 @@
-const { storage } = require('../server/storage');
-const { insertTimeEntrySchema } = require('../shared/schema');
 const { z } = require('zod');
+const { randomUUID } = require('crypto');
+
+// Zod schema for validation
+const insertTimeEntrySchema = z.object({
+  date: z.string(),
+  nafees: z.number().default(0),
+  waqas: z.number().default(0),
+  cheetan: z.number().default(0),
+  nadeem: z.number().default(0)
+});
+
+// In-memory storage (will reset with each cold start)
+let timeEntries = new Map();
 
 module.exports = async function handler(req, res) {
   // Enable CORS
@@ -14,13 +25,32 @@ module.exports = async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
-      const entries = await storage.getTimeEntries();
+      const entries = Array.from(timeEntries.values()).sort((a, b) => 
+        new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
       return res.json(entries);
     }
 
     if (req.method === 'POST') {
       const validatedData = insertTimeEntrySchema.parse(req.body);
-      const entry = await storage.createTimeEntry(validatedData);
+      const id = randomUUID();
+      const nafees = validatedData.nafees ?? 0;
+      const waqas = validatedData.waqas ?? 0;
+      const cheetan = validatedData.cheetan ?? 0;
+      const nadeem = validatedData.nadeem ?? 0;
+      const totalMinutes = nafees + waqas + cheetan + nadeem;
+      
+      const entry = {
+        ...validatedData,
+        id,
+        nafees,
+        waqas,
+        cheetan,
+        nadeem,
+        totalMinutes
+      };
+      
+      timeEntries.set(id, entry);
       return res.status(201).json(entry);
     }
 

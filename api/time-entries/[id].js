@@ -1,6 +1,17 @@
-const { storage } = require('../../server/storage');
-const { insertTimeEntrySchema } = require('../../shared/schema');
 const { z } = require('zod');
+
+// Zod schema for validation
+const insertTimeEntrySchema = z.object({
+  date: z.string(),
+  nafees: z.number().default(0),
+  waqas: z.number().default(0),
+  cheetan: z.number().default(0),
+  nadeem: z.number().default(0)
+});
+
+// In-memory storage (will reset with each cold start)
+// Note: In production, this should be replaced with a database
+let timeEntries = new Map();
 
 module.exports = async function handler(req, res) {
   const { id } = req.query;
@@ -17,17 +28,25 @@ module.exports = async function handler(req, res) {
   try {
     if (req.method === 'PUT') {
       const validatedData = insertTimeEntrySchema.partial().parse(req.body);
-      const entry = await storage.updateTimeEntry(id, validatedData);
+      const existing = timeEntries.get(id);
       
-      if (!entry) {
+      if (!existing) {
         return res.status(404).json({ message: "Time entry not found" });
       }
       
-      return res.json(entry);
+      const updated = { ...existing, ...validatedData };
+      const nafees = updated.nafees ?? 0;
+      const waqas = updated.waqas ?? 0;
+      const cheetan = updated.cheetan ?? 0;
+      const nadeem = updated.nadeem ?? 0;
+      updated.totalMinutes = nafees + waqas + cheetan + nadeem;
+      
+      timeEntries.set(id, updated);
+      return res.json(updated);
     }
 
     if (req.method === 'DELETE') {
-      const deleted = await storage.deleteTimeEntry(id);
+      const deleted = timeEntries.delete(id);
       
       if (!deleted) {
         return res.status(404).json({ message: "Time entry not found" });

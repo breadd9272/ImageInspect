@@ -1,6 +1,16 @@
-const { storage } = require('../server/storage');
-const { insertSettingsSchema } = require('../shared/schema');
 const { z } = require('zod');
+const { randomUUID } = require('crypto');
+
+// Zod schema for validation
+const insertSettingsSchema = z.object({
+  baseAmount: z.number()
+});
+
+// In-memory settings (will reset with each cold start)
+let settings = {
+  id: randomUUID(),
+  baseAmount: 10000
+};
 
 module.exports = async function handler(req, res) {
   // Enable CORS
@@ -14,13 +24,12 @@ module.exports = async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
-      const settings = await storage.getSettings();
       return res.json(settings);
     }
 
     if (req.method === 'PUT') {
       const validatedData = insertSettingsSchema.parse(req.body);
-      const settings = await storage.updateSettings(validatedData);
+      settings = { ...settings, ...validatedData };
       return res.json(settings);
     }
 
