@@ -2,6 +2,7 @@ import TimeTracker from "../components/time-tracker";
 import CalculationSection from "../components/calculation-section";
 import DataManagement from "../components/data-management";
 import { MobileHeader } from "../components/mobile-header";
+import { ApkDownloadButton } from "../components/apk-download-button";
 import { useQuery } from "@tanstack/react-query";
 import { useDeviceInfo } from "@/hooks/use-mobile";
 import type { TimeEntry, Settings } from "@shared/schema";
@@ -63,6 +64,7 @@ export default function Home() {
                   </svg>
                   Export
                 </button>
+                <ApkDownloadButton />
               </div>
             </div>
           </div>
@@ -79,6 +81,21 @@ export default function Home() {
             settings={settings} 
           />
           <DataManagement />
+        </div>
+
+        {/* APK Download Section - Prominent placement at bottom */}
+        <div className={`mt-12 ${isMobile ? 'px-2' : ''}`}>
+          <div className="bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200 rounded-xl p-6 text-center">
+            <div className="max-w-md mx-auto">
+              <h3 className="text-lg font-semibold text-emerald-900 mb-2">
+                Get Mobile App
+              </h3>
+              <p className="text-sm text-emerald-700 mb-4">
+                Convert this web app to a native Android APK for offline use
+              </p>
+              <ApkDownloadButton />
+            </div>
+          </div>
         </div>
       </main>
 
