@@ -44,10 +44,10 @@ export default function CalculationSection({ totals, settings }: CalculationSect
 
   // Calculate individual prices (per-minute rate × total minutes for each person)
   const prices = {
-    nafees: rates.nafees * totals.nafees,
-    waqas: rates.waqas * totals.waqas,
-    cheetan: rates.cheetan * totals.cheetan,
-    nadeem: rates.nadeem * totals.nadeem,
+    nafees: rates.nafees * totals.totalMinutes,
+    waqas: rates.waqas * totals.totalMinutes,
+    cheetan: rates.cheetan * totals.totalMinutes,
+    nadeem: rates.nadeem * totals.totalMinutes,
   };
 
   // Final calculation
@@ -137,7 +137,7 @@ export default function CalculationSection({ totals, settings }: CalculationSect
             <div data-testid="text-price-nafees" className="text-2xl font-bold text-green-700 font-mono">
               {prices.nafees.toLocaleString()}
             </div>
-            <div className="text-xs text-slate-500 mt-1">{rates.nafees} × {totals.nafees} min</div>
+            <div className="text-xs text-slate-500 mt-1">{rates.nafees} × {totals.totalMinutes} min</div>
           </div>
           
           <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
@@ -145,7 +145,7 @@ export default function CalculationSection({ totals, settings }: CalculationSect
             <div data-testid="text-price-waqas" className="text-2xl font-bold text-green-700 font-mono">
               {prices.waqas.toLocaleString()}
             </div>
-            <div className="text-xs text-slate-500 mt-1">{rates.waqas} × {totals.waqas} min</div>
+            <div className="text-xs text-slate-500 mt-1">{rates.waqas} × {totals.totalMinutes} min</div>
           </div>
           
           <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
@@ -153,7 +153,7 @@ export default function CalculationSection({ totals, settings }: CalculationSect
             <div data-testid="text-price-cheetan" className="text-2xl font-bold text-green-700 font-mono">
               {prices.cheetan.toLocaleString()}
             </div>
-            <div className="text-xs text-slate-500 mt-1">{rates.cheetan} × {totals.cheetan} min</div>
+            <div className="text-xs text-slate-500 mt-1">{rates.cheetan} × {totals.totalMinutes} min</div>
           </div>
           
           <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
@@ -161,7 +161,7 @@ export default function CalculationSection({ totals, settings }: CalculationSect
             <div data-testid="text-price-nadeem" className="text-2xl font-bold text-green-700 font-mono">
               {prices.nadeem.toLocaleString()}
             </div>
-            <div className="text-xs text-slate-500 mt-1">{rates.nadeem} × {totals.nadeem} min</div>
+            <div className="text-xs text-slate-500 mt-1">{rates.nadeem} × {totals.totalMinutes} min</div>
           </div>
         </div>
 
