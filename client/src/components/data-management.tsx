@@ -101,41 +101,62 @@ export default function DataManagement() {
         return;
       }
 
-      // Add a small delay to ensure the UI is settled
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // Scroll to the table to make sure it's in view
+      tableContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      
+      // Add delay for scrolling to complete
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-      // Get the actual dimensions of the container
-      const rect = tableContainer.getBoundingClientRect();
-      console.log('Container dimensions:', rect);
+      // Remove any transforms or constraints that might limit the capture
+      const originalTransform = tableContainer.style.transform;
+      const originalPosition = tableContainer.style.position;
+      tableContainer.style.transform = 'none';
+      tableContainer.style.position = 'static';
 
-      // Capture the complete table container as canvas with better settings
+      // Get the full container dimensions including all content
+      const fullWidth = Math.max(
+        tableContainer.scrollWidth,
+        tableContainer.offsetWidth,
+        tableContainer.clientWidth
+      );
+      const fullHeight = Math.max(
+        tableContainer.scrollHeight,
+        tableContainer.offsetHeight,
+        tableContainer.clientHeight
+      );
+
+      console.log('Full dimensions:', fullWidth, 'x', fullHeight);
+
+      // Capture with explicit dimensions
       const canvas = await html2canvas(tableContainer, {
         backgroundColor: '#ffffff',
-        scale: 1, // Reduce scale to capture full content
+        scale: 1,
         useCORS: true,
         logging: false,
         allowTaint: true,
-        foreignObjectRendering: true,
-        removeContainer: false,
-        width: Math.max(rect.width, tableContainer.scrollWidth),
-        height: Math.max(rect.height, tableContainer.scrollHeight),
-        windowWidth: window.innerWidth,
-        windowHeight: window.innerHeight,
-        x: 0,
-        y: 0
+        width: fullWidth,
+        height: fullHeight,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: Math.max(fullWidth, window.innerWidth),
+        windowHeight: Math.max(fullHeight, window.innerHeight)
       });
 
-      console.log('Canvas dimensions:', canvas.width, 'x', canvas.height);
+      // Restore original styles
+      tableContainer.style.transform = originalTransform;
+      tableContainer.style.position = originalPosition;
+
+      console.log('Final canvas dimensions:', canvas.width, 'x', canvas.height);
 
       // Convert to PNG and download
       const link = document.createElement('a');
-      link.download = `time-tracker-${new Date().toISOString().split('T')[0]}.png`;
+      link.download = `time-tracker-table-${new Date().toISOString().split('T')[0]}.png`;
       link.href = canvas.toDataURL('image/png', 1.0);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
 
-      toast({ title: "PNG downloaded successfully" });
+      toast({ title: "Table PNG downloaded successfully" });
     } catch (error) {
       console.error('PNG download error:', error);
       toast({ 
