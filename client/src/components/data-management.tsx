@@ -124,7 +124,6 @@ export default function DataManagement() {
           </style>
         </head>
         <body>
-          <p>Generated on: ${new Date().toLocaleString()}</p>
           
           <table>
             <thead>
@@ -171,7 +170,7 @@ export default function DataManagement() {
           
           <div>
             <h3>Summary</h3>
-            <p><strong>Base Amount:</strong> ${baseAmount.toLocaleString()}</p>
+            <p><strong>Tanker Price:</strong> ${baseAmount.toLocaleString()}</p>
             <p><strong>Total Minutes:</strong> ${totals.totalMinutes}</p>
             <p><strong>Total Hours:</strong> ${(totals.totalMinutes / 60).toFixed(1)}</p>
             <p><strong>Per Minute Rate:</strong> ${baseAmount.toLocaleString()} ÷ ${totals.totalMinutes} = ${finalPerMinuteRate.toFixed(3)}</p>

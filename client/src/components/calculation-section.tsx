@@ -109,7 +109,7 @@ export default function CalculationSection({ totals, settings }: CalculationSect
         </div>
 
         <div className="mt-6 p-4 bg-slate-50 rounded-lg">
-          <label className="block text-sm font-medium text-slate-700 mb-2">Base Amount for Calculations</label>
+          <label className="block text-sm font-medium text-slate-700 mb-2">Tanker Price for Calculations</label>
           <input
             data-testid="input-base-amount"
             type="number"
