@@ -116,29 +116,23 @@ export default function DataManagement() {
         nadeem: Math.round(finalPerMinuteRate * totals.nadeem),
       };
 
-      // Create HTML content similar to PDF
+      // Create HTML content - just the table
       const htmlContent = `
         <!DOCTYPE html>
         <html>
           <head>
-            <title>Time Tracking Report</title>
+            <title>Time Tracking Table</title>
             <style>
               body { 
                 font-family: Arial, sans-serif; 
-                margin: 20px; 
+                margin: 10px; 
                 background: white;
                 color: black;
-              }
-              .header { 
-                text-align: center; 
-                margin-bottom: 30px; 
-                border-bottom: 2px solid #333;
-                padding-bottom: 15px;
               }
               table { 
                 width: 100%; 
                 border-collapse: collapse; 
-                margin: 20px 0;
+                margin: 0;
                 box-shadow: 0 2px 8px rgba(0,0,0,0.1);
               }
               th, td { 
@@ -166,13 +160,6 @@ export default function DataManagement() {
             </style>
           </head>
           <body>
-            <div class="header">
-              <h1>Time Tracking Report</h1>
-              <p>Generated on: ${new Date().toLocaleDateString()}</p>
-              <p>Base Amount: Rs. ${baseAmount.toLocaleString()}</p>
-              <p>Per Minute Rate: Rs. ${finalPerMinuteRate.toFixed(2)}</p>
-            </div>
-            
             <table>
               <thead>
                 <tr>
@@ -224,8 +211,8 @@ export default function DataManagement() {
       iframe.style.position = 'fixed';
       iframe.style.top = '-9999px';
       iframe.style.left = '-9999px';
-      iframe.style.width = '1000px';
-      iframe.style.height = '800px';
+      iframe.style.width = '800px';
+      iframe.style.height = '400px';
       iframe.style.border = 'none';
       document.body.appendChild(iframe);
 
@@ -240,17 +227,21 @@ export default function DataManagement() {
       });
 
       // Wait a bit more for content to render
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 300));
 
-      // Capture the iframe content
+      // Get the actual content size
+      const tableElement = iframe.contentDocument!.querySelector('table');
+      const tableHeight = tableElement ? tableElement.offsetHeight + 40 : 400;
+
+      // Capture the iframe content with proper dimensions
       const canvas = await html2canvas(iframe.contentDocument!.body, {
         backgroundColor: '#ffffff',
         scale: 1,
         useCORS: true,
         logging: false,
         allowTaint: true,
-        width: 1000,
-        height: 600
+        width: 800,
+        height: Math.min(tableHeight, 400)
       });
 
       // Clean up
