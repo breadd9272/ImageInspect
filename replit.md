@@ -5,6 +5,7 @@ This is a full-stack time tracking calculator application built with React, Expr
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
+User language: Urdu/English mix (user communicates in Urdu).
 
 # System Architecture
 

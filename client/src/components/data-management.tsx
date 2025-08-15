@@ -109,12 +109,16 @@ export default function DataManagement() {
         backgroundColor: '#ffffff',
         scale: 2, // Higher quality
         useCORS: true,
-        logging: false,
+        logging: true, // Enable logging to debug
         allowTaint: true,
         width: tableContainer.scrollWidth,
         height: tableContainer.scrollHeight,
         scrollX: 0,
-        scrollY: 0
+        scrollY: 0,
+        ignoreElements: (element) => {
+          // Ignore certain elements that might cause issues
+          return element.tagName === 'SCRIPT' || element.tagName === 'STYLE';
+        }
       });
 
       // Convert to PNG and download
