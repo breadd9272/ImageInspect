@@ -12,6 +12,10 @@ export default function DataManagement() {
     queryKey: ['/api/time-entries']
   });
 
+  const { data: settings } = useQuery({
+    queryKey: ['/api/settings']
+  });
+
   const handleLoadData = () => {
     fileInputRef.current?.click();
   };
@@ -90,85 +94,179 @@ export default function DataManagement() {
 
   const handleDownloadPNG = async () => {
     try {
-      // Find the table element directly
-      const tableElement = document.querySelector('#time-tracker-container .data-table');
-      const tableContainer = document.getElementById('time-tracker-container');
-      
-      if (!tableElement || !tableContainer) {
-        toast({ 
-          title: "Error", 
-          description: "Time tracker table not found for capture", 
-          variant: "destructive" 
-        });
-        return;
-      }
+      // Calculate totals and prices like in PDF
+      const totals = timeEntries.reduce(
+        (acc, entry) => ({
+          nafees: acc.nafees + entry.nafees,
+          waqas: acc.waqas + entry.waqas,
+          cheetan: acc.cheetan + entry.cheetan,
+          nadeem: acc.nadeem + entry.nadeem,
+          totalMinutes: acc.totalMinutes + entry.totalMinutes,
+        }),
+        { nafees: 0, waqas: 0, cheetan: 0, nadeem: 0, totalMinutes: 0 }
+      );
 
-      // Scroll to make sure table is visible
-      tableContainer.scrollIntoView({ behavior: 'auto', block: 'start' });
-      await new Promise(resolve => setTimeout(resolve, 200));
+      // Get base amount from settings
+      const baseAmount = settings?.baseAmount || 10000;
+      const finalPerMinuteRate = totals.totalMinutes > 0 ? baseAmount / totals.totalMinutes : 0;
+      const prices = {
+        nafees: Math.round(finalPerMinuteRate * totals.nafees),
+        waqas: Math.round(finalPerMinuteRate * totals.waqas),
+        cheetan: Math.round(finalPerMinuteRate * totals.cheetan),
+        nadeem: Math.round(finalPerMinuteRate * totals.nadeem),
+      };
 
-      // Create a temporary wrapper for the complete table with header
-      const tempWrapper = document.createElement('div');
-      tempWrapper.style.cssText = `
-        position: fixed;
-        top: -9999px;
-        left: -9999px;
-        background: white;
-        padding: 20px;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        font-family: system-ui, -apple-system, sans-serif;
-        z-index: -1;
-        min-width: 800px;
+      // Create HTML content similar to PDF
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Time Tracking Report</title>
+            <style>
+              body { 
+                font-family: Arial, sans-serif; 
+                margin: 20px; 
+                background: white;
+                color: black;
+              }
+              .header { 
+                text-align: center; 
+                margin-bottom: 30px; 
+                border-bottom: 2px solid #333;
+                padding-bottom: 15px;
+              }
+              table { 
+                width: 100%; 
+                border-collapse: collapse; 
+                margin: 20px 0;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+              }
+              th, td { 
+                border: 1px solid #333; 
+                padding: 12px 8px; 
+                text-align: center; 
+                font-size: 14px;
+              }
+              th { 
+                background-color: #f5f5f5; 
+                font-weight: bold;
+                color: #333;
+              }
+              .total-row { 
+                background-color: #e8f5e8; 
+                font-weight: bold;
+              }
+              .price-row { 
+                background-color: #e3f2fd; 
+                font-weight: bold;
+              }
+              .date-col { width: 120px; }
+              .name-col { width: 100px; }
+              .total-col { width: 120px; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h1>Time Tracking Report</h1>
+              <p>Generated on: ${new Date().toLocaleDateString()}</p>
+              <p>Base Amount: Rs. ${baseAmount.toLocaleString()}</p>
+              <p>Per Minute Rate: Rs. ${finalPerMinuteRate.toFixed(2)}</p>
+            </div>
+            
+            <table>
+              <thead>
+                <tr>
+                  <th class="date-col">Date</th>
+                  <th class="name-col">Nafees</th>
+                  <th class="name-col">Waqas</th>
+                  <th class="name-col">Cheetan</th>
+                  <th class="name-col">Nadeem</th>
+                  <th class="total-col">Total Minutes</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${timeEntries.map(entry => `
+                  <tr>
+                    <td>${entry.date}</td>
+                    <td>${entry.nafees}</td>
+                    <td>${entry.waqas}</td>
+                    <td>${entry.cheetan}</td>
+                    <td>${entry.nadeem}</td>
+                    <td>${entry.totalMinutes}</td>
+                  </tr>
+                `).join('')}
+                
+                <tr class="total-row">
+                  <td><strong>TOTAL</strong></td>
+                  <td><strong>${totals.nafees}</strong></td>
+                  <td><strong>${totals.waqas}</strong></td>
+                  <td><strong>${totals.cheetan}</strong></td>
+                  <td><strong>${totals.nadeem}</strong></td>
+                  <td><strong>${totals.totalMinutes}</strong></td>
+                </tr>
+                
+                <tr class="price-row">
+                  <td><strong>PRICE</strong></td>
+                  <td><strong>Rs. ${prices.nafees.toLocaleString()}</strong></td>
+                  <td><strong>Rs. ${prices.waqas.toLocaleString()}</strong></td>
+                  <td><strong>Rs. ${prices.cheetan.toLocaleString()}</strong></td>
+                  <td><strong>Rs. ${prices.nadeem.toLocaleString()}</strong></td>
+                  <td><strong>Rs. ${(prices.nafees + prices.waqas + prices.cheetan + prices.nadeem).toLocaleString()}</strong></td>
+                </tr>
+              </tbody>
+            </table>
+          </body>
+        </html>
       `;
 
-      // Clone the entire table container content
-      const clonedContainer = tableContainer.cloneNode(true) as HTMLElement;
-      clonedContainer.style.position = 'static';
-      clonedContainer.style.transform = 'none';
-      clonedContainer.style.width = 'auto';
-      clonedContainer.style.height = 'auto';
-      clonedContainer.style.maxWidth = 'none';
-      clonedContainer.style.maxHeight = 'none';
-      clonedContainer.style.overflow = 'visible';
+      // Create a temporary iframe for rendering
+      const iframe = document.createElement('iframe');
+      iframe.style.position = 'fixed';
+      iframe.style.top = '-9999px';
+      iframe.style.left = '-9999px';
+      iframe.style.width = '1000px';
+      iframe.style.height = '800px';
+      iframe.style.border = 'none';
+      document.body.appendChild(iframe);
 
-      tempWrapper.appendChild(clonedContainer);
-      document.body.appendChild(tempWrapper);
+      // Wait for iframe to load
+      await new Promise((resolve) => {
+        iframe.onload = resolve;
+        if (iframe.contentDocument) {
+          iframe.contentDocument.open();
+          iframe.contentDocument.write(htmlContent);
+          iframe.contentDocument.close();
+        }
+      });
 
-      // Wait for render
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Wait a bit more for content to render
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-      // Get dimensions of the temporary wrapper
-      const wrapperRect = tempWrapper.getBoundingClientRect();
-      console.log('Wrapper dimensions:', wrapperRect.width, 'x', wrapperRect.height);
-
-      // Capture the temporary wrapper
-      const canvas = await html2canvas(tempWrapper, {
+      // Capture the iframe content
+      const canvas = await html2canvas(iframe.contentDocument!.body, {
         backgroundColor: '#ffffff',
         scale: 1,
         useCORS: true,
         logging: false,
         allowTaint: true,
-        width: Math.max(800, wrapperRect.width),
-        height: wrapperRect.height,
-        scrollX: 0,
-        scrollY: 0
+        width: 1000,
+        height: 600
       });
 
       // Clean up
-      document.body.removeChild(tempWrapper);
+      document.body.removeChild(iframe);
 
-      console.log('Final PNG canvas dimensions:', canvas.width, 'x', canvas.height);
+      console.log('PNG Report dimensions:', canvas.width, 'x', canvas.height);
 
       // Download
       const link = document.createElement('a');
-      link.download = `time-tracker-table-${new Date().toISOString().split('T')[0]}.png`;
+      link.download = `time-tracker-report-${new Date().toISOString().split('T')[0]}.png`;
       link.href = canvas.toDataURL('image/png', 1.0);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
 
-      toast({ title: "Complete table downloaded as PNG" });
+      toast({ title: "Report downloaded as PNG successfully" });
     } catch (error) {
       console.error('PNG download error:', error);
       toast({ 
