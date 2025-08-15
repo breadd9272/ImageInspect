@@ -3,6 +3,7 @@ import CalculationSection from "../components/calculation-section";
 import DataManagement from "../components/data-management";
 import { MobileHeader } from "../components/mobile-header";
 import { ApkDownloadButton } from "../components/apk-download-button";
+import { InstantApkButton } from "../components/instant-apk-button";
 import { useQuery } from "@tanstack/react-query";
 import { useDeviceInfo } from "@/hooks/use-mobile";
 import type { TimeEntry, Settings } from "@shared/schema";
@@ -64,7 +65,7 @@ export default function Home() {
                   </svg>
                   Export
                 </button>
-                <ApkDownloadButton />
+                <InstantApkButton />
               </div>
             </div>
           </div>
@@ -91,9 +92,12 @@ export default function Home() {
                 Get Mobile App
               </h3>
               <p className="text-sm text-emerald-700 mb-4">
-                Convert this web app to a native Android APK for offline use
+                Get instant APK build script - one click download!
               </p>
-              <ApkDownloadButton />
+              <div className="flex gap-3 justify-center flex-wrap">
+                <InstantApkButton />
+                <ApkDownloadButton />
+              </div>
             </div>
           </div>
         </div>

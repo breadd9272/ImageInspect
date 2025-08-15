@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertTimeEntrySchema, insertSettingsSchema } from "@shared/schema";
 import { z } from "zod";
+import apkBuilderRoutes from "./routes/apk-builder";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all time entries
@@ -91,6 +92,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     }
   });
+
+  // APK generation endpoint
+  app.post("/api/generate-apk", async (req, res) => {
+    try {
+      // Create a simple setup script that users can run
+      const setupScript = `#!/bin/bash
+echo "🚀 Building Time Tracker APK..."
+echo "📦 Installing dependencies..."
+npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/ios
+
+echo "🏗️  Building web app..."
+npm run build
+
+echo "📱 Adding Android platform..."
+npx cap add android
+
+echo "🔄 Syncing assets..."
+npx cap sync android
+
+echo "✅ Setup complete!"
+echo "🎯 Next steps:"
+echo "1. Install Android Studio"
+echo "2. Run: npx cap open android"
+echo "3. Build → Generate Signed Bundle/APK"
+echo ""
+echo "📁 APK will be at: android/app/build/outputs/apk/release/"
+echo "🎉 Your Time Tracker app will be ready!"`;
+
+      // Return the setup script as a downloadable file
+      res.setHeader('Content-Type', 'application/octet-stream');
+      res.setHeader('Content-Disposition', 'attachment; filename="build-time-tracker-apk.sh"');
+      res.send(setupScript);
+      
+    } catch (error) {
+      console.error("APK generation error:", error);
+      res.status(500).json({ error: "Failed to generate APK setup" });
+    }
+  });
+
+  // Add APK builder routes
+  app.use(apkBuilderRoutes);
 
   const httpServer = createServer(app);
   return httpServer;

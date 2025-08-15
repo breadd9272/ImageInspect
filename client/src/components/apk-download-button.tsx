@@ -36,9 +36,59 @@ export function ApkDownloadButton() {
     }
   ];
 
-  const handleQuickBuild = () => {
-    // This would trigger the automated build script
-    alert("Quick build feature coming soon! Please follow the manual steps for now.");
+  const handleQuickBuild = async () => {
+    try {
+      // Check if APK build is possible
+      const statusResponse = await fetch("/api/apk-status");
+      const status = await statusResponse.json();
+      
+      if (!status.canBuild) {
+        alert("Android Studio required for APK build. Please follow manual steps below.");
+        return;
+      }
+      
+      // Show loading state
+      const buildButton = document.querySelector('[data-testid="button-quick-build"]');
+      if (buildButton) {
+        (buildButton as HTMLButtonElement).disabled = true;
+        buildButton.textContent = "Building APK...";
+      }
+      
+      // Start APK build
+      const response = await fetch("/api/build-apk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+      });
+      
+      if (response.ok) {
+        // Download the APK file
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "time-tracker.apk";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        alert("✅ APK downloaded successfully!");
+        setIsDialogOpen(false);
+      } else {
+        const error = await response.json();
+        alert(`Build failed: ${error.details}\n\nPlease follow manual steps instead.`);
+      }
+    } catch (error) {
+      console.error("APK build error:", error);
+      alert("Build failed. Please use manual build steps instead.");
+    } finally {
+      // Reset button state
+      const buildButton = document.querySelector('[data-testid="button-quick-build"]');
+      if (buildButton) {
+        (buildButton as HTMLButtonElement).disabled = false;
+        buildButton.innerHTML = '<svg class="w-4 h-4 mr-1"><path d="M5 13l4 4L19 7"/></svg>Quick Build (Beta)';
+      }
+    }
   };
 
   const handleDownloadScript = () => {
