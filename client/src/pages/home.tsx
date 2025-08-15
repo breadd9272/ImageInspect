@@ -4,6 +4,7 @@ import DataManagement from "../components/data-management";
 import { MobileHeader } from "../components/mobile-header";
 import { ApkDownloadButton } from "../components/apk-download-button";
 import { InstantApkButton } from "../components/instant-apk-button";
+import { RealApkDownloader } from "../components/real-apk-downloader";
 import { useQuery } from "@tanstack/react-query";
 import { useDeviceInfo } from "@/hooks/use-mobile";
 import type { TimeEntry, Settings } from "@shared/schema";
@@ -95,8 +96,7 @@ export default function Home() {
                 Get instant APK build script - one click download!
               </p>
               <div className="flex gap-3 justify-center flex-wrap">
-                <InstantApkButton />
-                <ApkDownloadButton />
+                <RealApkDownloader />
               </div>
             </div>
           </div>

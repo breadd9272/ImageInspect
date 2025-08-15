@@ -1,5 +1,5 @@
 import { useDeviceInfo } from "@/hooks/use-mobile";
-import { InstantApkButton } from "./instant-apk-button";
+import { RealApkDownloader } from "./real-apk-downloader";
 
 interface MobileHeaderProps {
   title: string;
@@ -26,8 +26,8 @@ export function MobileHeader({ title, subtitle }: MobileHeaderProps) {
           {subtitle && <p className="text-emerald-100 text-sm">{subtitle}</p>}
         </div>
         <div className="ml-4">
-          <div className="[&>button]:bg-emerald-500 [&>button]:hover:bg-emerald-400 [&>button]:text-white [&>button]:border-emerald-400 [&>button]:text-sm [&>button]:px-3">
-            <InstantApkButton />
+          <div className="[&>button]:bg-emerald-500 [&>button]:hover:bg-emerald-400 [&>button]:text-white [&>button]:border-emerald-400 [&>button]:text-sm [&>button]:px-3 [&>button]:py-2">
+            <RealApkDownloader />
           </div>
         </div>
       </div>
