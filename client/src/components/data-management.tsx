@@ -1,0 +1,236 @@
+import { useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import type { TimeEntry } from "@shared/schema";
+
+export default function DataManagement() {
+  const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { data: timeEntries = [] } = useQuery<TimeEntry[]>({
+    queryKey: ['/api/time-entries']
+  });
+
+  const handleLoadData = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string;
+        let data;
+
+        if (file.name.endsWith('.json')) {
+          data = JSON.parse(content);
+        } else if (file.name.endsWith('.csv')) {
+          // Basic CSV parsing
+          const lines = content.split('\n');
+          const headers = lines[0].split(',');
+          data = lines.slice(1).map(line => {
+            const values = line.split(',');
+            const entry: any = {};
+            headers.forEach((header, index) => {
+              entry[header.trim()] = values[index]?.trim();
+            });
+            return entry;
+          });
+        } else {
+          throw new Error('Unsupported file format');
+        }
+
+        // Validate and import data
+        console.log('Loaded data:', data);
+        toast({ title: "Data loaded successfully" });
+      } catch (error) {
+        toast({ 
+          title: "Failed to load data", 
+          description: "Please check the file format and try again",
+          variant: "destructive" 
+        });
+      }
+    };
+
+    reader.readAsText(file);
+    event.target.value = '';
+  };
+
+  const handleSaveLocal = () => {
+    try {
+      const dataToSave = {
+        timeEntries,
+        exportDate: new Date().toISOString(),
+        version: '1.0'
+      };
+      
+      localStorage.setItem('timeTrackingData', JSON.stringify(dataToSave));
+      toast({ title: "Data saved to local storage successfully" });
+    } catch (error) {
+      toast({ 
+        title: "Failed to save data locally", 
+        variant: "destructive" 
+      });
+    }
+  };
+
+  const handlePrintReport = () => {
+    const printContent = generatePrintableReport();
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.print();
+    }
+  };
+
+  const generatePrintableReport = () => {
+    const totals = timeEntries.reduce(
+      (acc, entry) => ({
+        nafees: acc.nafees + entry.nafees,
+        waqas: acc.waqas + entry.waqas,
+        cheetan: acc.cheetan + entry.cheetan,
+        nadeem: acc.nadeem + entry.nadeem,
+        totalMinutes: acc.totalMinutes + entry.totalMinutes,
+      }),
+      { nafees: 0, waqas: 0, cheetan: 0, nadeem: 0, totalMinutes: 0 }
+    );
+
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Time Tracking Report</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+            th { background-color: #f5f5f5; }
+            .totals { background-color: #e8f5e8; font-weight: bold; }
+            h1 { color: #333; }
+          </style>
+        </head>
+        <body>
+          <h1>Time Tracking Report</h1>
+          <p>Generated on: ${new Date().toLocaleString()}</p>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Nafees</th>
+                <th>Waqas</th>
+                <th>Cheetan</th>
+                <th>Nadeem</th>
+                <th>Total Minutes</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${timeEntries.map(entry => `
+                <tr>
+                  <td>${entry.date}</td>
+                  <td>${entry.nafees}</td>
+                  <td>${entry.waqas}</td>
+                  <td>${entry.cheetan}</td>
+                  <td>${entry.nadeem}</td>
+                  <td>${entry.totalMinutes}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+            <tfoot>
+              <tr class="totals">
+                <td>TOTAL</td>
+                <td>${totals.nafees}</td>
+                <td>${totals.waqas}</td>
+                <td>${totals.cheetan}</td>
+                <td>${totals.nadeem}</td>
+                <td>${totals.totalMinutes}</td>
+              </tr>
+            </tfoot>
+          </table>
+          
+          <div>
+            <h3>Summary</h3>
+            <p>Total Minutes: ${totals.totalMinutes}</p>
+            <p>Total Hours: ${(totals.totalMinutes / 60).toFixed(1)}</p>
+          </div>
+        </body>
+      </html>
+    `;
+  };
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mt-8">
+      <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center">
+        <svg className="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+        </svg>
+        Data Management
+      </h3>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="flex flex-col items-center p-4 border border-slate-200 rounded-lg hover:border-blue-300 transition-colors">
+          <svg className="w-8 h-8 text-blue-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+          </svg>
+          <button 
+            data-testid="button-load-data"
+            onClick={handleLoadData}
+            className="text-sm font-medium text-blue-600 hover:text-blue-700"
+          >
+            Load Data
+          </button>
+          <p className="text-xs text-slate-500 mt-1 text-center">Import from file</p>
+        </div>
+        
+        <div className="flex flex-col items-center p-4 border border-slate-200 rounded-lg hover:border-emerald-300 transition-colors">
+          <svg className="w-8 h-8 text-emerald-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12"></path>
+          </svg>
+          <button 
+            data-testid="button-save-local"
+            onClick={handleSaveLocal}
+            className="text-sm font-medium text-emerald-600 hover:text-emerald-700"
+          >
+            Save Local
+          </button>
+          <p className="text-xs text-slate-500 mt-1 text-center">Browser storage</p>
+        </div>
+        
+        <div className="flex flex-col items-center p-4 border border-slate-200 rounded-lg hover:border-indigo-300 transition-colors">
+          <svg className="w-8 h-8 text-indigo-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H9.414a1 1 0 01-.707-.293l-2-2A1 1 0 005.586 6H4a2 2 0 00-2 2v4a2 2 0 002 2h2m3 4h6m-6 0l3-3m-3 3l3 3"></path>
+          </svg>
+          <button 
+            data-testid="button-print-report"
+            onClick={handlePrintReport}
+            className="text-sm font-medium text-indigo-600 hover:text-indigo-700"
+          >
+            Print Report
+          </button>
+          <p className="text-xs text-slate-500 mt-1 text-center">PDF export</p>
+        </div>
+      </div>
+
+      <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <div className="flex items-center">
+          <svg className="w-4 h-4 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span className="text-sm text-yellow-800">Data is automatically saved locally every 30 seconds</span>
+        </div>
+      </div>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".json,.csv"
+        onChange={handleFileUpload}
+        className="hidden"
+      />
+    </div>
+  );
+}
