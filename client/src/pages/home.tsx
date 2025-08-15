@@ -41,8 +41,8 @@ export default function Home() {
       {/* Mobile Header */}
       {isMobile ? (
         <MobileHeader 
-          title="Time Tracker" 
-          subtitle="Track work hours and calculate rates"
+          title="Tanker Calculation" 
+          subtitle="Calculate tanker rates and volumes"
         />
       ) : (
         /* Desktop Header */
@@ -50,8 +50,8 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-4">
               <div>
-                <h1 className="text-2xl font-bold text-slate-800">Time Tracking Calculator</h1>
-                <p className="text-sm text-slate-600 mt-1">Track work hours and calculate per-minute rates</p>
+                <h1 className="text-2xl font-bold text-slate-800">Tanker Calculation</h1>
+                <p className="text-sm text-slate-600 mt-1">Calculate tanker volumes and per-minute rates</p>
               </div>
               <div className="flex space-x-3">
                 <button 
@@ -88,7 +88,7 @@ export default function Home() {
         <footer className="bg-white border-t border-slate-200 mt-16 safe-area-bottom">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div className="text-center text-sm text-slate-500">
-              <p>Time Tracking Calculator - Real-time calculations and data persistence</p>
+              <p>Tanker Calculation - Real-time calculations and data persistence</p>
               <p className="mt-1">
                 Last saved: <span data-testid="text-last-saved" className="font-mono">{new Date().toLocaleString()}</span>
               </p>
