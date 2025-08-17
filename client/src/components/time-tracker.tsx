@@ -74,9 +74,14 @@ export default function TimeTracker({ timeEntries, totals }: TimeTrackerProps) {
   });
 
   const handleAddRow = () => {
-    const today = new Date().toISOString().split('T')[0];
+    // Get today's date in YYYY-MM-DD format
+    const today = new Date();
+    const formattedDate = today.getFullYear() + '-' + 
+      String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+      String(today.getDate()).padStart(2, '0');
+    
     createMutation.mutate({
-      date: today,
+      date: formattedDate,
       nafees: 0,
       waqas: 0,
       cheetan: 0,
@@ -86,6 +91,15 @@ export default function TimeTracker({ timeEntries, totals }: TimeTrackerProps) {
 
   const handleUpdateEntry = useCallback((id: string, field: keyof InsertTimeEntry, value: string | number) => {
     const key = `${id}-${field}`;
+    
+    // Validate date format if it's a date field
+    if (field === 'date' && typeof value === 'string') {
+      const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+      if (!datePattern.test(value)) {
+        toast({ title: "Please enter a valid date format (YYYY-MM-DD)", variant: "destructive" });
+        return;
+      }
+    }
     
     // Clear existing timeout
     if (debounceTimeouts.current[key]) {
@@ -100,7 +114,7 @@ export default function TimeTracker({ timeEntries, totals }: TimeTrackerProps) {
       });
       delete debounceTimeouts.current[key];
     }, 500); // 500ms debounce
-  }, [updateMutation]);
+  }, [updateMutation, toast]);
 
   const handleDeleteEntry = (id: string) => {
     if (confirm("Are you sure you want to delete this entry?")) {
@@ -149,9 +163,11 @@ export default function TimeTracker({ timeEntries, totals }: TimeTrackerProps) {
                   <input
                     data-testid={`input-date-${entry.id}`}
                     type="date"
-                    value={entry.date}
+                    value={entry.date || ''}
                     onChange={(e) => handleUpdateEntry(entry.id, 'date', e.target.value)}
                     className="data-table-input text-sm text-slate-700 font-mono"
+                    placeholder="YYYY-MM-DD"
+                    title="Select date for this entry"
                   />
                 </td>
                 <td className="px-4 py-4">

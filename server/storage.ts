@@ -27,9 +27,23 @@ export class MemStorage implements IStorage {
   }
 
   async getTimeEntries(): Promise<TimeEntry[]> {
-    return Array.from(this.timeEntries.values()).sort((a, b) => 
-      new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
+    return Array.from(this.timeEntries.values()).sort((a, b) => {
+      // Handle empty or invalid dates
+      if (!a.date && !b.date) return 0;
+      if (!a.date) return 1; // Put entries without dates at the end
+      if (!b.date) return -1;
+      
+      // Sort by date (newest first)
+      const dateA = new Date(a.date);
+      const dateB = new Date(b.date);
+      
+      // Check for invalid dates
+      if (isNaN(dateA.getTime()) && isNaN(dateB.getTime())) return 0;
+      if (isNaN(dateA.getTime())) return 1;
+      if (isNaN(dateB.getTime())) return -1;
+      
+      return dateB.getTime() - dateA.getTime();
+    });
   }
 
   async getTimeEntry(id: string): Promise<TimeEntry | undefined> {
